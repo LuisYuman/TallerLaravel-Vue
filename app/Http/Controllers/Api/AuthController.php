@@ -17,9 +17,8 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'nombre'   => 'required|string|max:150',
-            'email'    => 'required|email|max:150|unique:usuarios,email',
             'password' => 'required|string|min:6',
-            'rol'      => 'required|in:admin,usuario',
+            
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -60,6 +59,21 @@ class AuthController extends Controller
             'message' => 'Login exitoso',
             'usuario' => $usuario,
             'token'   => $token,
+        ]);
+    }
+
+    /**
+     * Formulario de login para testing desde navegador
+     */
+    public function loginForm()
+    {
+        return response()->json([
+            'message' => 'Este endpoint requiere POST. Usa Postman o curl para hacer login.',
+            'endpoint' => 'POST /api/login',
+            'example' => [
+                'email' => 'isaac@isaac.com',
+                'password' => '123456'
+            ]
         ]);
     }
 

@@ -15,7 +15,7 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        return response()->json(Usuario::all());
+        return response()->json(Usuario::select('id', 'nombre', 'email', 'rol', 'created_at')->get());
     }
 
     /**
@@ -24,6 +24,24 @@ class UsuarioController extends Controller
     public function create()
     {
         //
+    }
+
+    /**
+     * Formulario para crear usuario desde navegador
+     */
+    public function createUserForm()
+    {
+        return response()->json([
+            'message' => 'Para crear un usuario, usa POST /api/usuarios/addUser',
+            'endpoint' => 'POST /api/usuarios/addUser',
+            'example' => [
+                'nombre' => 'Isaac Admin',
+                'email' => 'isaac@isaac.com',
+                'password' => '123456',
+                'rol' => 'admin'
+            ],
+            'note' => 'Usa Postman o curl para enviar la petición POST'
+        ]);
     }
 
     /**
@@ -69,7 +87,19 @@ class UsuarioController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $usuario = Usuario::find($id);
+        
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Usuario no encontrado',
+                'status' => false
+            ], 404);
+        }
+        
+        return response()->json([
+            'data' => $usuario,
+            'status' => true
+        ], 200);
     }
 
     /**
@@ -128,6 +158,20 @@ class UsuarioController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $usuario = Usuario::find($id);
+        
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Usuario no encontrado',
+                'status' => false
+            ], 404);
+        }
+        
+        $usuario->delete();
+        
+        return response()->json([
+            'message' => 'Usuario eliminado correctamente',
+            'status' => true
+        ], 200);
     }
 }

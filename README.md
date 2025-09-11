@@ -1,66 +1,185 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel API - Gestión de Usuarios y Tareas
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST en Laravel para gestionar Usuarios y Tareas, con autenticación por tokens (Sanctum), validación robusta y exportación a Excel.
 
-## About Laravel
+## Características
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- ✅ Autenticación por token con Laravel Sanctum
+- ✅ CRUD de Usuarios y Tareas
+- ✅ Sistema de roles en usuarios: `admin` | `usuario`
+- ✅ Validación y respuestas JSON consistentes
+- ✅ Relación Eloquent: `Usuario hasMany Tarea` / `Tarea belongsTo Usuario`
+- ✅ Exportación de reporte de tareas pendientes a Excel
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requisitos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.1+
+- MySQL/MariaDB
+- Composer 2+
+- Node.js (solo si compilas assets; para esta API no es requerido)
 
-## Learning Laravel
+## Instalación y Configuración
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+1) Clonar e instalar dependencias
+```bash
+git clone <TU_REPO_URL>
+cd laravel-api
+composer install
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+2) Variables de entorno
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+Edita `.env`:
+```env
+APP_NAME="Laravel API"
+APP_ENV=local
+APP_KEY=base64:...
+APP_DEBUG=true
+APP_URL=http://localhost
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel_api
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_contraseña
+```
 
-## Laravel Sponsors
+3) Migraciones (y seed opcional)
+```bash
+php artisan migrate
+# opcional: php artisan db:seed
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+4) Ejecutar servidor
+```bash
+php artisan serve
+# Servirá en http://127.0.0.1:8000
+```
 
-### Premium Partners
+## Rutas y Endpoints
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Autenticación
+- `POST /api/register` → Registrar usuario (genera token)
+- `POST /api/login` → Login (genera token)
+- `POST /api/logout` → Logout (revoca tokens) [auth:sanctum]
 
-## Contributing
+Ejemplos cURL:
+```bash
+curl -X POST http://localhost:8000/api/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Juan Pérez",
+    "email": "juan@ejemplo.com",
+    "password": "123456",
+    "rol": "usuario"
+  }'
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+curl -X POST http://localhost:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "juan@ejemplo.com",
+    "password": "123456"
+  }'
+```
 
-## Code of Conduct
+Respuesta típica de login/register:
+```json
+{
+  "message": "Login exitoso",
+  "usuario": { "id": 1, "nombre": "Juan Pérez", "email": "juan@ejemplo.com", "rol": "usuario" },
+  "token": "1|abcdef..."
+}
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Usar el token en peticiones protegidas:
+```
+Authorization: Bearer TU_TOKEN
+```
 
-## Security Vulnerabilities
+### Usuarios
+- `GET /api/usuarios/listUsers` → Listar usuarios
+- `POST /api/usuarios/addUser` → Crear usuario
+- `GET /api/usuarios/getUser/{id}` → Ver usuario
+- `PUT /api/usuarios/updateUser/{id}` → Actualizar usuario
+- `DELETE /api/usuarios/deleteUser/{id}` → Eliminar usuario
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Nota: el modelo `Usuario` oculta `password` por defecto. Puedes ocultar más campos con `$hidden`.
 
-## License
+### Tareas
+- `GET /api/tareas/` → Listar tareas (incluye usuario relacionado: `id,nombre,email`)
+- `POST /api/tareas/` → Crear tarea
+- `GET /api/tareas/{id}` → Ver tarea
+- `PUT /api/tareas/{id}` → Actualizar tarea
+- `DELETE /api/tareas/{id}` → Eliminar tarea
+- `GET /api/tareas/usuarios` → Listar usuarios para selector (`id,nombre,email`)
+- `GET /api/tareas/report-pendientes` → Descargar Excel con tareas pendientes
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Ejemplo crear tarea:
+```bash
+curl -X POST http://localhost:8000/api/tareas/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Preparar informe",
+    "descripcion": "Informe mensual",
+    "estado": "pendiente",
+    "fecha_vencimiento": "2025-12-31",
+    "user_id": 1
+  }'
+```
+
+## Modelos y Relaciones
+
+- `App\Models\Usuario` (Authenticatable)
+  - fillable: `nombre, email, password, rol`
+  - hidden: `password`
+  - relaciones: `tareas()` hasMany
+
+- `App\Models\Tarea`
+  - fillable: `titulo, descripcion, estado, fecha_vencimiento, user_id`
+  - casts: `fecha_vencimiento: date`
+  - relaciones: `user()` belongsTo `Usuario`
+
+## Seguridad
+
+- Autenticación con Sanctum y tokens personales (`createToken`)
+- Validación exhaustiva en controladores (respuestas 422 con detalles)
+- Campos sensibles ocultos en respuestas (`$hidden`)
+
+## Exportación a Excel
+
+- Endpoint: `GET /api/tareas/report-pendientes`
+- Genera un archivo `.xlsx` con tareas en estado pendiente
+
+## Estructura del Proyecto (principal)
+
+```
+app/
+├─ Http/Controllers/Api/
+│  ├─ AuthController.php
+│  ├─ UsuarioController.php
+│  └─ TareaController.php
+├─ Models/
+│  ├─ Usuario.php
+│  └─ Tarea.php
+routes/
+└─ api.php
+```
+
+Consulta también `ARQUITECTURA.md` y `diagrama-arquitectura.drawio` para un diagrama visual.
+
+## Comandos útiles
+
+```bash
+php artisan serve             # Levantar el servidor (puerto 8000)
+php artisan migrate           # Ejecutar migraciones
+php artisan tinker            # Consola interactiva
+php artisan route:list | cat  # Ver rutas
+```
+
+## Licencia
+
+MIT.

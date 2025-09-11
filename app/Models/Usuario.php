@@ -20,8 +20,14 @@ class Usuario extends Authenticatable
         'rol',
     ];
 
-    // Ocultar el password al devolver el modelo en JSON
+    // Ocultar campos sensibles al devolver el modelo en JSON
     protected $hidden = [
         'password',
     ];
+
+    // Relación con Tareas
+    public function tareas()
+    {
+        return $this->hasMany(Tarea::class, 'user_id');
+    }
 }
