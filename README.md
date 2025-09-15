@@ -1,125 +1,126 @@
-# Laravel API - Gestión de Usuarios y Tareas
+API en Laravel - Usuarios y Tareas
 
-API REST en Laravel para gestionar Usuarios y Tareas, con autenticación por tokens (Sanctum), validación robusta y exportación a Excel.
+Proyecto de API REST desarrollada en Laravel, enfocada en la gestión de usuarios y tareas. Incluye autenticación mediante Laravel Sanctum, validaciones completas y la posibilidad de exportar reportes a Excel.
 
-## Características
+🚀 Funcionalidades principales
 
-- ✅ Autenticación por token con Laravel Sanctum
-- ✅ CRUD de Usuarios y Tareas
-- ✅ Sistema de roles en usuarios: `admin` | `usuario`
-- ✅ Validación y respuestas JSON consistentes
-- ✅ Relación Eloquent: `Usuario hasMany Tarea` / `Tarea belongsTo Usuario`
-- ✅ Exportación de reporte de tareas pendientes a Excel
+🔑 Autenticación basada en tokens personales con Sanctum
 
-## Requisitos
+👥 CRUD completo para Usuarios y Tareas
 
-- PHP 8.1+
-- MySQL/MariaDB
-- Composer 2+
-- Node.js (solo si compilas assets; para esta API no es requerido)
+🛡️ Roles de usuario: admin y usuario
 
-## Instalación y Configuración
+📦 Respuestas JSON claras y consistentes
 
-1) Clonar e instalar dependencias
-```bash
-git clone <TU_REPO_URL>
+🔗 Relaciones entre modelos:
+
+Usuario → hasMany → Tarea
+
+Tarea → belongsTo → Usuario
+
+📊 Generación de reportes en Excel con tareas pendientes
+
+📋 Requisitos previos
+
+PHP 8.1 o superior
+
+MySQL o MariaDB
+
+Composer 2+
+
+Node.js (solo requerido si se compilan assets, no necesario para la API)
+
+⚙️ Instalación
+
+Clonar el repositorio e instalar dependencias
+
+git clone <URL_DEL_REPO>
 cd laravel-api
 composer install
-```
 
-2) Variables de entorno
-```bash
+
+Configurar variables de entorno
+
 cp .env.example .env
 php artisan key:generate
-```
-Edita `.env`:
-```env
-APP_NAME="Laravel API"
-APP_ENV=local
-APP_KEY=base64:...
-APP_DEBUG=true
-APP_URL=http://localhost
 
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
+
+Editar el archivo .env con los datos de la aplicación y la base de datos:
+
 DB_DATABASE=laravel_api
-DB_USERNAME=tu_usuario
-DB_PASSWORD=tu_contraseña
-```
+DB_USERNAME=usuario
+DB_PASSWORD=contraseña
 
-3) Migraciones (y seed opcional)
-```bash
+
+Ejecutar migraciones (y opcionalmente seeders)
+
 php artisan migrate
-# opcional: php artisan db:seed
-```
+# php artisan db:seed
 
-4) Ejecutar servidor
-```bash
+
+Iniciar servidor de desarrollo
+
 php artisan serve
-# Servirá en http://127.0.0.1:8000
-```
+# Disponible en http://127.0.0.1:8000
 
-## Rutas y Endpoints
+🔑 Endpoints principales
+Autenticación
 
-### Autenticación
-- `POST /api/register` → Registrar usuario (genera token)
-- `POST /api/login` → Login (genera token)
-- `POST /api/logout` → Logout (revoca tokens) [auth:sanctum]
+POST /api/register → Crear usuario y obtener token
 
-Ejemplos cURL:
-```bash
-curl -X POST http://localhost:8000/api/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Juan Pérez",
-    "email": "juan@ejemplo.com",
-    "password": "123456",
-    "rol": "usuario"
-  }'
+POST /api/login → Iniciar sesión y generar token
+
+POST /api/logout → Cerrar sesión (requiere auth:sanctum)
+
+Ejemplo de login:
 
 curl -X POST http://localhost:8000/api/login \
   -H "Content-Type: application/json" \
-  -d '{
-    "email": "juan@ejemplo.com",
-    "password": "123456"
-  }'
-```
+  -d '{"email":"juan@ejemplo.com","password":"123456"}'
 
-Respuesta típica de login/register:
-```json
+
+Respuesta esperada:
+
 {
   "message": "Login exitoso",
   "usuario": { "id": 1, "nombre": "Juan Pérez", "email": "juan@ejemplo.com", "rol": "usuario" },
   "token": "1|abcdef..."
 }
-```
 
-Usar el token en peticiones protegidas:
-```
+
+Para acceder a rutas protegidas agrega el header:
 Authorization: Bearer TU_TOKEN
-```
 
-### Usuarios
-- `GET /api/usuarios/listUsers` → Listar usuarios
-- `POST /api/usuarios/addUser` → Crear usuario
-- `GET /api/usuarios/getUser/{id}` → Ver usuario
-- `PUT /api/usuarios/updateUser/{id}` → Actualizar usuario
-- `DELETE /api/usuarios/deleteUser/{id}` → Eliminar usuario
+Usuarios
 
-Nota: el modelo `Usuario` oculta `password` por defecto. Puedes ocultar más campos con `$hidden`.
+GET /api/usuarios/listUsers → Listar usuarios
 
-### Tareas
-- `GET /api/tareas/` → Listar tareas (incluye usuario relacionado: `id,nombre,email`)
-- `POST /api/tareas/` → Crear tarea
-- `GET /api/tareas/{id}` → Ver tarea
-- `PUT /api/tareas/{id}` → Actualizar tarea
-- `DELETE /api/tareas/{id}` → Eliminar tarea
-- `GET /api/tareas/usuarios` → Listar usuarios para selector (`id,nombre,email`)
-- `GET /api/tareas/report-pendientes` → Descargar Excel con tareas pendientes
+POST /api/usuarios/addUser → Crear usuario
 
-Ejemplo crear tarea:
-```bash
+GET /api/usuarios/getUser/{id} → Ver usuario específico
+
+PUT /api/usuarios/updateUser/{id} → Editar usuario
+
+DELETE /api/usuarios/deleteUser/{id} → Eliminar usuario
+
+Tareas
+
+GET /api/tareas/ → Listar todas las tareas (con datos del usuario asociado)
+
+POST /api/tareas/ → Crear nueva tarea
+
+GET /api/tareas/{id} → Detalle de tarea
+
+PUT /api/tareas/{id} → Actualizar tarea
+
+DELETE /api/tareas/{id} → Eliminar tarea
+
+GET /api/tareas/usuarios → Listado de usuarios para asignación
+
+GET /api/tareas/report-pendientes → Descargar Excel con tareas pendientes
+
+Ejemplo de creación de tarea:
+
 curl -X POST http://localhost:8000/api/tareas/ \
   -H "Content-Type: application/json" \
   -d '{
@@ -129,34 +130,40 @@ curl -X POST http://localhost:8000/api/tareas/ \
     "fecha_vencimiento": "2025-12-31",
     "user_id": 1
   }'
-```
 
-## Modelos y Relaciones
+📂 Modelos y relaciones
 
-- `App\Models\Usuario` (Authenticatable)
-  - fillable: `nombre, email, password, rol`
-  - hidden: `password`
-  - relaciones: `tareas()` hasMany
+Usuario (App\Models\Usuario)
 
-- `App\Models\Tarea`
-  - fillable: `titulo, descripcion, estado, fecha_vencimiento, user_id`
-  - casts: `fecha_vencimiento: date`
-  - relaciones: `user()` belongsTo `Usuario`
+Campos: nombre, email, password, rol
 
-## Seguridad
+password oculto en respuestas ($hidden)
 
-- Autenticación con Sanctum y tokens personales (`createToken`)
-- Validación exhaustiva en controladores (respuestas 422 con detalles)
-- Campos sensibles ocultos en respuestas (`$hidden`)
+Relación: tareas() → hasMany
 
-## Exportación a Excel
+Tarea (App\Models\Tarea)
 
-- Endpoint: `GET /api/tareas/report-pendientes`
-- Genera un archivo `.xlsx` con tareas en estado pendiente
+Campos: titulo, descripcion, estado, fecha_vencimiento, user_id
 
-## Estructura del Proyecto (principal)
+fecha_vencimiento casteada como date
 
-```
+Relación: user() → belongsTo Usuario
+
+🔒 Seguridad
+
+Tokens personales generados con Sanctum (createToken)
+
+Validación de datos en controladores (errores 422 en caso de fallo)
+
+Protección de información sensible en JSON
+
+📊 Reportes en Excel
+
+Ruta: GET /api/tareas/report-pendientes
+
+Devuelve archivo .xlsx con tareas en estado pendiente
+
+🗂️ Estructura relevante del proyecto
 app/
 ├─ Http/Controllers/Api/
 │  ├─ AuthController.php
@@ -167,19 +174,12 @@ app/
 │  └─ Tarea.php
 routes/
 └─ api.php
-```
 
-Consulta también `ARQUITECTURA.md` y `diagrama-arquitectura.drawio` para un diagrama visual.
 
-## Comandos útiles
+Consulta también ARQUITECTURA.md y el diagrama diagrama-arquitectura.drawio para una visión general.
 
-```bash
-php artisan serve             # Levantar el servidor (puerto 8000)
-php artisan migrate           # Ejecutar migraciones
-php artisan tinker            # Consola interactiva
-php artisan route:list | cat  # Ver rutas
-```
-
-## Licencia
-
-MIT.
+🛠️ Comandos útiles
+php artisan serve      # Levantar el servidor
+php artisan migrate    # Ejecutar migraciones
+php artisan tinker     # Consola interactiva
+php artisan route:list # Ver rutas disponibles
