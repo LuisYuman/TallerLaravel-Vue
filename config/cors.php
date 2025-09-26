@@ -15,11 +15,15 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // Es recomendable NO usar '*' cuando supports_credentials=true.
+    'allowed_origins' => [
+        env('FRONTEND_URL', 'http://localhost:5173'),
+        'http://127.0.0.1:5173'
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -29,6 +33,7 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    // Necesario para que se envíen cookies de sesión/CSRF
+    'supports_credentials' => true,
 
 ];

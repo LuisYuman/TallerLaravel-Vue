@@ -17,20 +17,21 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'nombre'   => 'required|string|max:150',
+            'email'    => 'required|email|max:150|unique:usuarios,email',
             'password' => 'required|string|min:6',
-            
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
         $usuario = Usuario::create($validated);
 
-        // Generar token
-        $token = $usuario->createToken('api-token')->plainTextToken;
+        // Iniciar sesión inmediatamente (opcional)
+        auth()->login($usuario);
+        $request->session()->regenerate();
 
         return response()->json([
             'message' => 'Usuario registrado exitosamente',
             'usuario' => $usuario,
-            'token'   => $token,
+            'auth_via' => 'session-cookie'
         ], 201);
     }
 
@@ -52,13 +53,14 @@ class AuthController extends Controller
             ]);
         }
 
-        // Generar token
-        $token = $usuario->createToken('api-token')->plainTextToken;
+        // Autenticar mediante sesión (Sanctum SPA)
+        auth()->login($usuario);
+        $request->session()->regenerate();
 
         return response()->json([
             'message' => 'Login exitoso',
             'usuario' => $usuario,
-            'token'   => $token,
+            'auth_via' => 'session-cookie'
         ]);
     }
 
@@ -82,10 +84,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        // Cerrar sesión de la forma recomendada
+        auth()->guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
-            'message' => 'Logout exitoso, tokens revocados'
+            'message' => 'Logout exitoso'
         ]);
     }
 }

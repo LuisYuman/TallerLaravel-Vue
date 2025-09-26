@@ -15,9 +15,11 @@ return [
     |
     */
 
+    // Dominios considerados "stateful" para SPA: se les enviarán cookies de sesión.
+    // Usa variable de entorno SANCTUM_STATEFUL_DOMAINS=localhost:5173
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s',
-        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
+        'localhost,localhost:5173,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
         Sanctum::currentApplicationUrlWithPort()
     ))),
 

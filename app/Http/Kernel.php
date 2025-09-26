@@ -40,6 +40,15 @@ class Kernel extends HttpKernel
 
         'api' => [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            // Necesario para que la cookie "laravel_session" se desencripte correctamente
+            \App\Http\Middleware\EncryptCookies::class,
+            // Estos middlewares permiten manejar la sesión (solo afectarán peticiones stateful)
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            // Verificar token CSRF en peticiones stateful (Axios enviará X-XSRF-TOKEN)
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            // Compartir errores de validación si fuera necesario
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
